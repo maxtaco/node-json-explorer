@@ -14,5 +14,12 @@
     "json"
   ],
   "author": "Maxwell Krohn",
-  "license": "BSD-3-clause"
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "iced-runtime-3": "^3.0.4",
+    "minimist": "^1.2.0"
+  },
+  "devDependencies": {
+    "iced-coffee-script-3": "^110.0.0"
+  }
 }
