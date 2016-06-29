@@ -1,5 +1,5 @@
 {
-  "name": "json-explorer",
+  "name": "json-explorer-taco",
   "version": "1.0.0",
   "description": "a simple CLI json explorer utility",
   "main": "lib/index.js",
