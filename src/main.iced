@@ -7,7 +7,17 @@ util = require 'util'
 
 usage = () ->
   console.error """usage:
-    json [-p] [-b] [-c] <path.to[4].your.obj>
+json [-pbic] [-s <spaces>] [-d <depth>] <path.to.4.your.obj>
+
+  boolean flags:
+    -b -- base64 decode the output (if it's a string)
+    -c -- count the number of items in the array and output that
+    -i -- use inspect rather than JSON.stringify
+    -p -- pretty-print JSON.stringify
+
+  integer flags:
+    -s <space> -- Use the given number of spaces in pretty-print (2 by default)
+    -d <depth> -- only investigate depth levels in inspect (infinity by default)
 """
 
 #==================================================

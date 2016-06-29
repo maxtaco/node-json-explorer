@@ -6,6 +6,9 @@
   "scripts": {
     "test": "make test"
   },
+  "bin": {
+    "json" : "./bin/main.js"
+  },
   "repository": {
     "type": "git",
     "url": "github.com/maxtaco/node-json-explorer"
