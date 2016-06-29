@@ -1,13 +1,13 @@
 {
   "name": "json-explorer-taco",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "a simple CLI json explorer utility",
   "main": "lib/index.js",
   "scripts": {
     "test": "make test"
   },
   "bin": {
-    "json" : "./bin/main.js"
+    "json": "./bin/main.js"
   },
   "repository": {
     "type": "git",
