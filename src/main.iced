@@ -7,7 +7,7 @@ util = require 'util'
 
 usage = () ->
   console.error """usage:
-json [-pbic] [-s <spaces>] [-d <depth>] <path.to.4.your.obj>
+json [-bcip] [-s <spaces>] [-d <depth>] <path.to.4.your.obj>
 
   boolean flags:
     -b -- base64 decode the output (if it's a string)
