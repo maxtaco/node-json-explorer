@@ -16,7 +16,9 @@
   "author": "Maxwell Krohn",
   "license": "BSD-3-Clause",
   "dependencies": {
+    "iced-error": "0.0.9",
     "iced-runtime-3": "^3.0.4",
+    "iced-utils": "^0.1.24",
     "minimist": "^1.2.0"
   },
   "devDependencies": {
