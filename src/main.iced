@@ -2,6 +2,7 @@
 minimist = require 'minimist'
 {make_esc} = require 'iced-error'
 iutils = require 'iced-utils'
+util = require 'util'
 {a_json_parse} = iutils.util
 
 usage = () ->
@@ -17,21 +18,23 @@ class Runner
     @pretty = false
     @b64decode = false
     @inspect = false
-    @depth = 4
+    @depth = null
+    @spacing = 2
     @path = null
     @count = false
 
   parse_argv : ({argv}, cb) ->
-    argv = minimist argv
+    argv = minimist argv, { boolean : [ "p", "b", "i", "c" ] }
     if argv.h
       usage()
       err = new Error "usage: shown!"
     else
-      @pretty = argv.p
-      @b64decode = argv.b
-      @inspect = argv.i
-      @depth = argv.d
-      @count = argv.c
+      @pretty = true if argv.p
+      @b64decode = true if argv.b
+      @inspect = true if argv.i
+      @depth = argv.d if argv.d?
+      @count = true if argv.c
+      @spacing = argv.s if argv.s?
       if argv._.length > 1
         err = new Error "only need one arg -- a path to your object -- which is optional"
       else if argv._.length is 1
@@ -57,19 +60,35 @@ class Runner
           json = json[part]
     cb err, json
 
+  output : ({json}, cb) ->
+    ret = if typeof json is 'string'
+      if @b64decode then (new Buffer json, "base64").toString('utf8')
+      else json
+    else if typeof json is 'object'
+      if Array.isArray(json) and @count then json.length
+      else if @inspect then util.inspect json, { @depth }
+      else if @pretty then JSON.stringify json, null, @spacing
+      else JSON.stringify json
+    cb null, ret
+
   run : (opts, cb) ->
     esc = make_esc cb, "Runner::run"
     await @parse_argv opts, esc defer()
     await @read_input opts, esc defer buf
     await a_json_parse buf.toString(), esc defer json
     await @pick_path { json }, esc defer json
-    cb null, json
+    await @output { json }, esc defer out
+    cb null, out
 
 #==================================================
 
-r = new Runner
-await r.run { argv : process.argv[2...] }, defer err, buf
-if err?
-  console.error err.toString()
-else
-  console.log buf
+exports.run = (cb) ->
+  r = new Runner
+  await r.run { argv : process.argv[2...] }, defer err, buf
+  rc = 0
+  if err?
+    rc = 2
+    console.error err.toString()
+  else
+    console.log buf
+  cb rc
