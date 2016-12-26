@@ -100,5 +100,5 @@ exports.run = (cb) ->
     rc = 2
     console.error err.toString()
   else
-    console.log buf
+    await process.stdout.write buf, defer()
   cb rc
