@@ -75,7 +75,7 @@ class Runner
       if @b64decode then (new Buffer json, "base64").toString('utf8')
       else json
     else if typeof json is 'object'
-      if Array.isArray(json) and @count then json.length
+      if Array.isArray(json) and @count then json.length.toString('10')
       else if @inspect then util.inspect json, { @depth }
       else if @pretty then JSON.stringify json, null, @spacing
       else JSON.stringify json
