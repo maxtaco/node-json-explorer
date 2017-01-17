@@ -79,6 +79,7 @@ class Runner
       else if @inspect then util.inspect json, { @depth }
       else if @pretty then JSON.stringify json, null, @spacing
       else JSON.stringify json
+    else if typeof json is 'number' then json.toString('10')
     cb null, ret
 
   run : (opts, cb) ->
