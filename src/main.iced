@@ -4,16 +4,19 @@ minimist = require 'minimist'
 iutils = require 'iced-utils'
 util = require 'util'
 {a_json_parse} = iutils.util
+{unpack} = require 'purepack'
 
 usage = () ->
   console.error """usage:
-json [-bcip] [-s <spaces>] [-d <depth>] <path.to.4.your.obj>
+json [-bcipu] [-s <spaces>] [-d <depth>] <path.to.4.your.obj>
 
   boolean flags:
     -b -- base64 decode the output (if it's a string)
     -c -- count the number of items in the array and output that
     -i -- use inspect rather than JSON.stringify
     -p -- pretty-print JSON.stringify
+    -u -- base64 decode, msgpack unpack, and then reencode the object with buffers
+          converted to base64
 
   integer flags:
     -s <space> -- Use the given number of spaces in pretty-print (2 by default)
@@ -21,6 +24,8 @@ json [-bcip] [-s <spaces>] [-d <depth>] <path.to.4.your.obj>
 """
 
 #==================================================
+
+
 
 class Runner
 
@@ -32,9 +37,10 @@ class Runner
     @spacing = 2
     @path = null
     @count = false
+    @unpack = false
 
   parse_argv : ({argv}, cb) ->
-    argv = minimist argv, { boolean : [ "p", "b", "i", "c" ] }
+    argv = minimist argv, { boolean : [ "p", "b", "i", "c", "u" ] }
     if argv.h
       usage()
       err = new Error "usage: shown!"
@@ -44,6 +50,7 @@ class Runner
       @inspect = true if argv.i
       @depth = argv.d if argv.d?
       @count = true if argv.c
+      @unpack = true if argv.u
       @spacing = argv.s if argv.s?
       if argv._.length > 1
         err = new Error "only need one arg -- a path to your object -- which is optional"
@@ -62,7 +69,9 @@ class Runner
   pick_path : ({json}, cb) ->
     err = null
     if @path?
-      parts = @path.split /\./
+      # need to call toString() in case it is a number, as returned by the command-line
+      # parsing library we're using.
+      parts = @path.toString().split /\./
       for part, i in parts
         if not json?
           err = new Error "null value at #{parts[0...i].join(".")}"
@@ -70,15 +79,32 @@ class Runner
           json = json[part]
     cb err, json
 
+  b64encode_buffers : (o) ->
+    if typeof o isnt 'object' then o
+    else if not o? then o
+    else if Buffer.isBuffer(o) then o.toString('base64')
+    else if Array.isArray(o) then ( @b64encode_buffers(e) for e in o )
+    else
+      ret = {}
+      for k,v of o
+        ret[k] = @b64encode_buffers v
+      ret
+
+  do_unpack : (json) -> @json_format @b64encode_buffers unpack (new Buffer json, "base64")
+
+  json_format : (json) ->
+    if @inspect then util.inspect json, { @depth }
+    else if @pretty then JSON.stringify json, null, @spacing
+    else JSON.stringify json
+
   output : ({json}, cb) ->
     ret = if typeof json is 'string'
       if @b64decode then (new Buffer json, "base64").toString('utf8')
+      else if @unpack then @do_unpack json
       else json
     else if typeof json is 'object'
       if Array.isArray(json) and @count then json.length.toString('10')
-      else if @inspect then util.inspect json, { @depth }
-      else if @pretty then JSON.stringify json, null, @spacing
-      else JSON.stringify json
+      else @json_format json
     else if typeof json is 'number' then json.toString('10')
     cb null, ret
 
