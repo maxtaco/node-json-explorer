@@ -1,6 +1,6 @@
 {
   "name": "json-explorer-taco",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "a simple CLI json explorer utility",
   "main": "lib/index.js",
   "scripts": {
@@ -22,7 +22,8 @@
     "iced-error": "0.0.9",
     "iced-runtime-3": "^3.0.4",
     "iced-utils": "^0.1.24",
-    "minimist": "^1.2.0"
+    "minimist": "^1.2.0",
+    "purepack": "^1.0.4"
   },
   "devDependencies": {
     "iced-coffee-script-3": "^110.0.0"
