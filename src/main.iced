@@ -90,8 +90,6 @@ class Runner
         ret[k] = @b64encode_buffers v
       ret
 
-  do_unpack : (json) -> @json_format @b64encode_buffers unpack (new Buffer json, "base64")
-
   json_format : (json) ->
     if @inspect then util.inspect json, { @depth }
     else if @pretty then JSON.stringify json, null, @spacing
@@ -100,7 +98,6 @@ class Runner
   output : ({json}, cb) ->
     ret = if typeof json is 'string'
       if @b64decode then (new Buffer json, "base64").toString('utf8')
-      else if @unpack then @do_unpack json
       else json
     else if typeof json is 'object'
       if Array.isArray(json) and @count then json.length.toString('10')
@@ -108,11 +105,23 @@ class Runner
     else if typeof json is 'number' then json.toString('10')
     cb null, ret
 
+  parse_input : ({buf}, cb) ->
+    esc = make_esc cb, "parse_input"
+    err = ret = null
+    s = buf.toString()
+    if @unpack
+      ret = err = null
+      try ret = @b64encode_buffers unpack Buffer.from(s, "base64")
+      catch e then err = e
+    else
+      await a_json_parse s, defer err, ret
+    cb err, ret
+
   run : (opts, cb) ->
     esc = make_esc cb, "Runner::run"
     await @parse_argv opts, esc defer()
     await @read_input opts, esc defer buf
-    await a_json_parse buf.toString(), esc defer json
+    await @parse_input { buf }, esc defer json
     await @pick_path { json }, esc defer json
     await @output { json }, esc defer out
     cb null, out
